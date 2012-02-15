@@ -8,13 +8,15 @@
  * 
  */
 #include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include "../rfb/rfb.h"
+#include <netinet/in.h>
+#include "proto.h"
 
 static int gClient;
 
-void rfbSend(u8 *data, size_t len)
+void rfbSend(const u8 *data, size_t len)
 {
 	send(gClient, data, len, 0);
 }
@@ -38,16 +40,17 @@ int serverStart(void)
 
 	bind(sock, (struct sockaddr *)&addr, sizeof(addr));
 
-	listen(sock, MAXPENDING);
+	listen(sock, 10);
 
-	len = sizoef(client);
+	len = sizeof(client);
 	return accept(sock, (struct sockaddr *)&client, &len);
 }
 
+static u8 data[128];
 int main(void)
 {
-	u8 data[128];
 	int rc;
+	int x = 0, y = 0;
 
 	gClient = serverStart();
 

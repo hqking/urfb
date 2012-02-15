@@ -7,7 +7,10 @@
  * 
  * 
  */
-#include "rfb.h"
+#include <stdlib.h>
+#include <assert.h>
+#include <string.h>
+#include "proto.h"
 
 #ifndef RFB_SERVER_NAME
 #define RFB_SERVER_NAME "urfb server"
@@ -21,7 +24,7 @@
 #define RFB_HEIGHT 480
 #endif
 
-extern void rfbSend(u8 *data, size_t len);
+extern void rfbSend(const u8 *data, size_t len);
 extern void rfbSendByte(u8 data);
 
 static const char rfbAuthMsg[] = {
@@ -42,32 +45,32 @@ static void rfbError(const char *reason)
 
 	len = strlen(reason);
 
-	rfbSend(&len, sizeof(len));
+	rfbSend((u8 *)&len, sizeof(len));
 	rfbSend(reason, len);
 }
 
-static void initialization(struct rfbClientInitMsg *shared)
+static void initialization(rfbClientInitMsg *shared)
 {
-	struct rfbServerInitMsg serverInfo = {
-		.framebufferWidth = RFB_WIDTH;
-		.framebufferHeight = RFB_HEIGHT;
+	rfbServerInitMsg serverInfo = {
+		.framebufferWidth = RFB_WIDTH,
+		.framebufferHeight = RFB_HEIGHT,
 		.format = {
-			.bpp = 16;
-			.depth = 16;
-			.bigEndian = 0;
-			.trueColour = 1;
-			.redMax = 31;
-			.greenMax = 63;
-			.blueMax = 31;
-			.redShift = 0;
-			.greenShift = 5;
-			.blueShift = 11;
-		};
-		.nameLength = sizeof(RFB_SERVER_NAME)
-		.nameString = RFB_SERVER_NAME;
+			.bpp = 16,
+			.depth = 16,
+			.bigEndian = 0,
+			.trueColour = 1,
+			.redMax = 31,
+			.greenMax = 63,
+			.blueMax = 31,
+			.redShift = 0,
+			.greenShift = 5,
+			.blueShift = 11,
+		},
+		.nameLength = sizeof(RFB_SERVER_NAME),
+		.nameString = RFB_SERVER_NAME,
 	};
 
-	rfbSend(&serverInfo, sizeof(serverInfo));
+	rfbSend((u8 *)&serverInfo, sizeof(serverInfo));
 
 	gState = S_MESSAGE;
 }
@@ -76,7 +79,7 @@ static void authSuccess(void)
 {
 	u32 res = 0;
 
-	rfbSend(&res, sizeof(res));
+	rfbSend((u8 *)&res, sizeof(res));
 
 	gState = S_INITIALIZATION;
 }
@@ -85,7 +88,7 @@ static void authFail(const char *reason)
 {
 	u32 res = 1;
 
-	rfbSend(&res, sizeof(res));
+	rfbSend((u8 *)&res, sizeof(res));
 	rfbError(reason);	
 
 	gState = S_CLOSED;
@@ -116,7 +119,7 @@ static void authCheck(char type)
 	}
 }
 
-void rfbBlock(u16 x, u16 y, u16 w, u16 h, u16 color)
+void rfbBlock(u16 x, u16 y, u16 w, u16 h, u16 colour)
 {
 	rfbFramebufferUpdateMsg msg = {
 		.type = rfbFramebufferUpdate,
@@ -144,10 +147,10 @@ void rfbBlock(u16 x, u16 y, u16 w, u16 h, u16 color)
 		.h = h,
 	};
 
-	rfbSend(&msg, sizeof(msg));
-	rfbSend(&box, sizeof(box));
-	rfbSend(&rre, sizeof(rre));
-	rfbSend(&rect, sizeof(rect));
+	rfbSend((u8 *)&msg, sizeof(msg));
+	rfbSend((u8 *)&box, sizeof(box));
+	rfbSend((u8 *)&rre, sizeof(rre));
+	rfbSend((u8 *)&rect, sizeof(rect));
 }
 
 void rfbClose(void)
@@ -163,20 +166,20 @@ void rfbStart(void)
 void rfbRecv(u8 *buf, size_t len)
 {
 	switch (gState) {
-	case MESSAGE:
+	case S_MESSAGE:
 		break;
 
 	case S_INITIALIZATION:
-		if (len != sizeof(struct initialization))
+		if (len != sizeof(rfbClientInitMsg))
 			return ;
 
-		initialization(buf);
+		initialization((rfbClientInitMsg *)buf);
 
 		break;
 
 	case S_HANDSHAKE:
 		if (len != 1)
-			authFail();
+			authFail("invalid handshake response");
 
 		authCheck(*buf);
 
