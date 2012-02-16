@@ -60,16 +60,16 @@ static void initialization(rfbClientInitMsg *shared)
 		.framebufferWidth = swap16(RFB_WIDTH),
 		.framebufferHeight = swap16(RFB_HEIGHT),
 		.format = {
-			.bpp = 16,
-			.depth = 16,
+			.bpp = 32,
+			.depth = 24,
 			.bigEndian = 0,
 			.trueColour = 1,
-			.redMax = swap16(31),
-			.greenMax = swap16(63),
-			.blueMax = swap16(31),
-			.redShift = 0,
-			.greenShift = 5,
-			.blueShift = 11,
+			.redMax = swap16(255),
+			.greenMax = swap16(255),
+			.blueMax = swap16(255),
+			.redShift = 16,
+			.greenShift = 8,
+			.blueShift = 0,
 		},
 		.nameLength = swap32(sizeof(RFB_SERVER_NAME) - 1),
 	};
@@ -131,7 +131,7 @@ static void authCheck(char type)
 	}
 }
 
-void rfbBlock(u16 x, u16 y, u16 w, u16 h, u16 colour)
+void rfbBlock(u16 x, u16 y, u16 w, u16 h, PIXEL colour)
 {
 	u16 x_swap, y_swap, w_swap, h_swap;
 
@@ -149,7 +149,6 @@ void rfbBlock(u16 x, u16 y, u16 w, u16 h, u16 colour)
 		rfbFramebufferUpdateMsgHdr hdr;
 		rfbRectangle box;
 		rfbRREencoding rre;
-		rfbRRErectangle rect;
 	} msg = {
 		.hdr = {
 			.type = rfbFramebufferUpdate,
@@ -163,15 +162,8 @@ void rfbBlock(u16 x, u16 y, u16 w, u16 h, u16 colour)
 			.encoding = swap32(ENC_RRE),
 		},
 		.rre = {
-			.number = swap32(1),
-			.bgcolour = swap16(colour),
-		},
-		.rect = {
-			.bgcolour = swap16(colour),
-			.x = x_swap,
-			.y = y_swap,
-			.w = w_swap,
-			.h = h_swap,
+			.number = 0,
+			.bgcolour = colour,
 		},
 	};
 
@@ -194,6 +186,7 @@ void rfbRecv(u8 *buf, size_t len)
 	switch (gState) {
 	case S_MESSAGE:
 		printf("rfb: recv [S_MESSAGE]\n");
+		rfbBlock(0, 0, RFB_WIDTH, RFB_HEIGHT, 0x0000ff);
 		break;
 
 	case S_INITIALIZATION:

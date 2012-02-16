@@ -17,11 +17,7 @@ typedef signed char	s8;
 typedef signed short	s16;
 typedef signed long	s32;
 
-typedef struct {
-	u16 r:5;
-	u16 g:6;
-	u16 b:5;
-} PIXEL;
+typedef u32 PIXEL;
 
 typedef struct {
 	u8 bpp;
@@ -192,8 +188,8 @@ typedef struct {
 } rfbCopyRectEncoding;
 
 typedef struct {
-	u32 number;
-	PIXEL bgcolour;
+	u32 number __attribute__((__packed__));
+	PIXEL bgcolour __attribute__((__packed__));
 } rfbRREencoding;
 
 typedef struct {
