@@ -14,6 +14,8 @@
 #include <netinet/in.h>
 #include "proto.h"
 
+#include <stdio.h>
+
 static int gClient;
 
 void rfbSend(const u8 *data, size_t len)
@@ -37,10 +39,13 @@ int serverStart(void)
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	addr.sin_port = htons(5900);
 
 	bind(sock, (struct sockaddr *)&addr, sizeof(addr));
 
 	listen(sock, 10);
+
+	printf("start listen...\n");
 
 	len = sizeof(client);
 	return accept(sock, (struct sockaddr *)&client, &len);
@@ -54,17 +59,21 @@ int main(void)
 
 	gClient = serverStart();
 
+	printf("got client\n");
+
 	rfbStart();
 
 	while (1) {
-		rc = recv(gClient, data, sizeof(data), MSG_DONTWAIT);
-		if (rc > 0)
+		rc = recv(gClient, data, sizeof(data), 0);
+		printf("got %d bytes\n", rc);
+		if (rc > 0) {
 			rfbRecv(data, rc);
-		else if (rc == 0)
+		} else if (rc == 0) {
 			break;
-		else 
-			exit(-1);
-		
+		} else {
+			close(gClient);
+			break;
+		}		
 
 		sleep(1);
 		rfbBlock(50 + x++, 50 + y++, 100, 100, 0x9999);

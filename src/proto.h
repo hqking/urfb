@@ -67,7 +67,7 @@ typedef struct {
 	u16 framebufferHeight;
 	rfbPixelFormat format;
 	u32 nameLength;
-	u8 *nameString;
+	/* u8 *nameString; */
 } rfbServerInitMsg;
 
 /* ****************************************************************
@@ -148,7 +148,7 @@ typedef struct {
 	u8 pad;
 	u16 number;
 	/* rfbRectangle */
-} rfbFramebufferUpdateMsg;
+} rfbFramebufferUpdateMsgHdr;
 
 typedef struct {
 	u16 red;
