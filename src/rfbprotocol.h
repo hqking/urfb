@@ -1,5 +1,5 @@
 /**
- * @file   proto.h
+ * @file   rfbprotocol.h
  * @author Yifeng Jin <hqking@gmail.com>
  * @date   Tue Feb 14 16:35:07 2012
  * 
@@ -7,8 +7,8 @@
  * 
  * 
  */
-#ifndef __PROTO_H__
-#define __PROTO_H__
+#ifndef __RFBPROTOCOL_H__
+#define __RFBPROTOCOL_H__
 
 typedef unsigned char	u8;
 typedef unsigned short	u16;
@@ -204,4 +204,4 @@ typedef struct {
 	u16 h;
 } rfbRRErectangle;
 
-#endif	/* __PROTO_H__ */
+#endif	/* __RFBPROTOCOL_H__ */

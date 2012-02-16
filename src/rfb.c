@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-#include "proto.h"
+#include "rfb.h"
 
 #define swap16(s) ((((s) & 0xff) << 8) | (((s) >> 8) & 0xff))
 
@@ -31,9 +31,6 @@
 #ifndef RFB_HEIGHT
 #define RFB_HEIGHT 480
 #endif
-
-extern void rfbSend(const u8 *data, size_t len);
-extern void rfbSendByte(u8 data);
 
 static const char rfbAuthMsg[] = {
 	1,

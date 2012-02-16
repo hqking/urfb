@@ -12,7 +12,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include "proto.h"
+#include "rfb.h"
 
 #include <stdio.h>
 
